@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from sympy import sympify, N, pi, E, sin, cos, tan, cot, sqrt, solve, Matrix
+from sympy import sympify, N, pi, sin, cos, tan, cot, sqrt, solve, Matrix
 import matplotlib.pyplot as plt
 from io import BytesIO
 import re
@@ -14,7 +14,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Токен бота (замените на ваш)
+# Токен бота
 TOKEN = "8763281008:AAGRl6cZWpK0QEDYV2EmeglGMb1R9AjeXuI"
 
 # Инициализация БД для истории
@@ -144,6 +144,7 @@ async def show_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
     history_text = "\n".join([f"{expr} = {res}" for expr, res in records])
     await update.message.reply_text(f"История вычислений:\n{history_text}")
 
+
 async def plot_function(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         func_str = update.message.text.replace('/plot ', '')
@@ -174,7 +175,6 @@ async def plot_function(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Ошибка построения графика: {e}")
 
-
 async def solve_equation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         eq_str = update.message.text.replace('/solve ', '')
@@ -191,11 +191,11 @@ async def solve_equation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Ошибка решения уравнения: {e}")
 
-async def matrix_operation(update: Update, context: ContextTypes.DEFAULT_
-                           async def matrix_operation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def matrix_operation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Пример ввода: /matrix [[1,2],[3,4]] + [[5,6],[7,8]]
         command = update.message.text.replace('/matrix ', '')
+
         # Разбираем команду на матрицы и операцию
         if '+' in command:
             matrices = command.split('+')
@@ -292,7 +292,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Добавляем открывающую скобку после функции
         current_expr = context.user_data.get('expression', '')
         context.user_data['expression'] = current_expr + user_input + '('
-        await update.message.reply_text(f"Вы ввели: {context.user_data['expression']}", reply_markup=MAIN_KEYBOARD if current_mode == 'main' else (MATRIX_KEYBOARD if current_mode == 'matrix' else PLOT_KEYBOARD))
+        await update.message.reply_text(
+            f"Вы ввели: {context.user_data['expression']}",
+            reply_markup=MAIN_KEYBOARD if current_mode == 'main' else (MATRIX_KEYBOARD if current_mode == 'matrix' else PLOT_KEYBOARD)
+        )
         return
 
     elif user_input == '=':
@@ -336,7 +339,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if abs(num_float) > 1e10 or (abs(num_float) < 1e-5 and num_float != 0):
                         return f"{num_float:.2e}"  # Научная нотация
                     else:
-                        return str(num_float)
+                return str(num_float)
                 except:
                     return str(num)
 
@@ -382,6 +385,7 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Запускаем бота
+    print("Бот запущен...")
     application.run_polling()
 
 if __name__ == '__main__':
