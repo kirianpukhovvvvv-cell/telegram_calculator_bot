@@ -332,18 +332,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 fraction_str = "Не представимо в виде простой дроби"
 
-            # Форматируем вывод больших чисел
-            def format_large_number(num):
-                try:
-                    num_float = float(num)
-                    if abs(num_float) > 1e10 or (abs(num_float) < 1e-5 and num_float != 0):
-                        return f"{num_float:.2e}"  # Научная нотация
-                    else:
-                return str(num_float)
-                except:
-                    return str(num)
+                    # Форматируем вывод больших чисел
+        def format_large_number(num):
+            try:
+                num_float = float(num)
+                if abs(num_float) > 1e10 or (abs(num_float) < 1e-5 and num_float != 0):
+                    return f"{num_float:.2e}"  # Научная нотация
+                else:
+                    return str(num_float)  # Исправленный отступ
+            except:
+                return str(num)
 
-            decimal_formatted = format_large_number(decimal_result)
+        decimal_formatted = format_large_number(decimal_result)
+
 
             # Сохраняем в базу данных
             user_id = update.effective_user.id
