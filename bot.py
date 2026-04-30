@@ -14,8 +14,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Токен бота
+# Токен бота (замените на ваш)
 TOKEN = "8763281008:AAGRl6cZWpK0QEDYV2EmeglGMb1R9AjeXuI"
+
 
 # Инициализация БД для истории
 class HistoryDB:
@@ -84,12 +85,14 @@ PLOT_KEYBOARD = ReplyKeyboardMarkup([
     ['Back to main']
 ], resize_keyboard=True)
 
+
 def safe_append_expression(current_expr, new_part):
     """Безопасно добавляет часть выражения, избегая дублирования операторов"""
     if current_expr and current_expr[-1] in '+-*/' and new_part in '+-*/':
         # Заменяем последний оператор на новый
         return current_expr[:-1] + new_part
     return current_expr + new_part
+
 
 def validate_matrix_input(matrix_str):
     """Проверяет корректность ввода матрицы"""
@@ -118,6 +121,17 @@ def validate_equation_input(equation_str):
         return True, ""
     except Exception as e:
         return False, f"Ошибка в выражении: {e}"
+
+def format_large_number(num):
+    """Форматирует большие/маленькие числа в научную нотацию"""
+    try:
+        num_float = float(num)
+        if abs(num_float) > 1e10 or (abs(num_float) < 1e-5 and num_float != 0):
+            return f"{num_float:.2e}"  # Научная нотация
+        else:
+            return str(num_float)
+    except:
+        return str(num)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -160,6 +174,7 @@ async def plot_function(update: Update, context: ContextTypes.DEFAULT_TYPE):
         plt.grid(True)
         plt.axhline(0, color='black', linewidth=0.5)
         plt.axvline(0, color='black', linewidth=0.5)
+
 
         # Сохраняем в буфер
         buf = BytesIO()
@@ -332,19 +347,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 fraction_str = "Не представимо в виде простой дроби"
 
-                    # Форматируем вывод больших чисел
-        def format_large_number(num):
-            try:
-                num_float = float(num)
-                if abs(num_float) > 1e10 or (abs(num_float) < 1e-5 and num_float != 0):
-                    return f"{num_float:.2e}"  # Научная нотация
-                else:
-                    return str(num_float)  # Исправленный отступ
-            except:
-                return str(num)
-
-        decimal_formatted = format_large_number(decimal_result)
-
+            # Используем вынесенную функцию для форматирования
+            decimal_formatted = format_large_number(decimal_result)
 
             # Сохраняем в базу данных
             user_id = update.effective_user.id
@@ -362,15 +366,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(response, reply_markup=MAIN_KEYBOARD, parse_mode='Markdown')
 
-    else:
-        # Для обычных символов
-        current_expr = context.user_data.get('expression', '')
-        new_expr = safe_append_expression(current_expr, user_input)
-        context.user_data['expression'] = new_expr
-        await update.message.reply_text(
-            f"Вы ввели: {new_expr}",
-            reply_markup=MAIN_KEYBOARD if current_mode == 'main' else (MATRIX_KEYBOARD if current_mode == 'matrix' else PLOT_KEYBOARD)
-        )
+
+        else:
+            # Для обычных символов
+            current_expr = context.user_data.get('expression', '')
+            new_expr = safe_append_expression(current_expr, user_input)
+            context.user_data['expression'] = new_expr
+            await update.message.reply_text(
+                f"Вы ввели: {new_expr}",
+                reply_markup=MAIN_KEYBOARD if current_mode == 'main' else (MATRIX_KEYBOARD if current_mode == 'matrix' else PLOT_KEYBOARD)
+            )
 
 def main():
     application = Application.builder().token(TOKEN).build()
